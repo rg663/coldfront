@@ -43,8 +43,6 @@ User Profile{% if not user == viewed_user %}: {{ viewed_user.username }}{% endif
                 <form class="form-inline" method="post" action="{% url 'user-upgrade' %}">
                   <div class="form-group mb-2">
                     <span class="badge bg-danger"><i class="fas fa-times" aria-hidden="true"></i><span class="sr-only">No</span></span>
-                  </div>
-                  <div class="form-group mx-sm-3 mb-2">
                     {% csrf_token %}
                     <button class="btn btn-secondary" type="submit"><i class="fas fa-chevron-circle-up" aria-hidden="true"></i> Upgrade Account</button>
                   </div>
