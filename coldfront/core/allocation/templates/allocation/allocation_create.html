@@ -67,7 +67,7 @@ Request New Allocation
   var resources_with_eula = {{ resources_with_eula | safe }};
 
   $(document).ready(function () {
-    $('<br><input id="selectAll" class="check" type="checkbox"> <strong>Select All Users</strong>').insertAfter($("#div_id_users > label"))
+    $('<br><input id="selectAll" class="form-check-input" type="checkbox"> <strong>Select All Users</strong>').insertAfter($("#div_id_users > label"))
     $("#id_resource").trigger('change');
 
     $("#selectAll").click(function () {
