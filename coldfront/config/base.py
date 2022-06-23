@@ -50,12 +50,12 @@ INSTALLED_APPS = [
 
 # Additional Apps
 INSTALLED_APPS += [
+    'crispy_bootstrap5',
     'crispy_forms',
     'sslserver',
     'django_q',
     'simple_history',
 ]
-
 # ColdFront Apps
 INSTALLED_APPS += [
     'coldfront.core.user',
@@ -130,7 +130,10 @@ if len(SITE_TEMPLATES) > 0:
     else:
         raise ImproperlyConfigured('SITE_TEMPLATES should be a path to a directory')
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
 SETTINGS_EXPORT = []
 
 STATIC_URL = '/static/'
