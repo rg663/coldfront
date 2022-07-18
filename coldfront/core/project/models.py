@@ -25,14 +25,12 @@ class ProjectStatusChoice(TimeStampedModel):
 
 class Project(TimeStampedModel):
 
-    DEFAULT_DESCRIPTION = '''
-We do not have information about your research. Please provide a detailed description of your work and update your field of science. Thank you!
-        '''
+    DEFAULT_DESCRIPTION = 'We do not have information about your research. Please provide a detailed description of your work and update your field of science. Thank you!'
 
     title = models.CharField(max_length=255,)
     pi = models.ForeignKey(User, on_delete=models.CASCADE,)
     description = models.TextField(
-        default=DEFAULT_DESCRIPTION,
+        default = DEFAULT_DESCRIPTION,
         validators=[
             MinLengthValidator(
                 10,
