@@ -109,7 +109,7 @@ Resource List
     resetForm($('#filter_form'));
   });
 
-  $(".datepicker").datepicker();
+  $(".datepicker").datepicker({dateFormat: 'yy-mm-dd'});
 
   function resetForm($form) {
     $form.find('input:text, input:password, input:file, select, textarea').val('');
