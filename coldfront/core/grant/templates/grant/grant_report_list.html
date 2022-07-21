@@ -49,8 +49,8 @@ Grants Report
                 <td class="text-nowrap">{{ form.total_amount_awarded.value|intcomma }}</td>
                 <td class="text-nowrap">{{ form.funding_agency.value }}</td>
                 <td class="text-nowrap">{{ form.grant_number.value }}</td>
-                <td class="text-nowrap">{{ form.grant_start.value|date:"M. d, Y" }}</td>
-                <td class="text-nowrap">{{ form.grant_end.value|date:"M. d, Y" }}</td>
+                <td class="text-nowrap">{{ form.grant_start.value|date:"Y-m-d" }}</td>
+                <td class="text-nowrap">{{ form.grant_end.value|date:"Y-m-d" }}</td>
                 <td>{{ form.percent_credit.value }}</td>
                 <td>{{ form.direct_funding.value|intcomma }}</td>
               </tr>
