@@ -128,11 +128,11 @@ Allocation Detail
           </tr>
           <tr>
             <th scope="row" class="text-nowrap">Created:</th>
-            <td>{{ allocation.created|date:"M. d, Y" }}</td>
+            <td>{{ allocation.created|date:"Y-m-d" }}</td>
           </tr>
           <tr>
             <th scope="row" class="text-nowrap">Last Modified:</th>
-            <td>{{ allocation.modified|date:"M. d, Y" }}</td>
+            <td>{{ allocation.modified|date:"Y-m-d" }}</td>
           </tr>
           <tr>
             {% if request.user.is_superuser or request.user.is_staff %}
@@ -255,7 +255,7 @@ Allocation Detail
           <tbody>
             {% for change_request in allocation_changes %}
                 <tr>
-                  <td>{{ change_request.created|date:"M. d, Y" }}</td>
+                  <td>{{ change_request.created|date:"Y-m-d" }}</td>
                   {% if change_request.status.name == 'Approved' %}
                     <td class="text-success">{{ change_request.status.name }}</td>
                   {% elif change_request.status.name == 'Denied' %}
@@ -325,7 +325,7 @@ Allocation Detail
               {% else %}
                 <td class="text-info">{{ user.status.name }}</td>
               {% endif %}
-              <td>{{ user.modified|date:"M. d, Y" }}</td>
+              <td>{{ user.modified|date:"Y-m-d" }}</td>
             </tr>
           {% endfor %}
         </tbody>

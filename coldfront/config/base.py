@@ -29,6 +29,7 @@ TIME_ZONE = ENV.str('TIME_ZONE', default='America/New_York')
 USE_I18N = True
 USE_L10N = False
 DATE_FORMAT = 'Y-m-d'
+DATETIME_FORMAT = 'Y-m-d H:i'
 USE_TZ = True
 
 #------------------------------------------------------------------------------

@@ -73,11 +73,11 @@ Request Allocation Change
             </tr>
             <tr>
               <th scope="row" class="text-nowrap">Created:</th>
-              <td>{{ allocation.created|date:"M. d, Y" }}</td>
+              <td>{{ allocation.created|date:"Y-m-d" }}</td>
             </tr>
             <tr>
               <th scope="row" class="text-nowrap">Last Modified:</th>
-              <td>{{ allocation.modified|date:"M. d, Y" }}</td>
+              <td>{{ allocation.modified|date:"Y-m-d" }}</td>
             </tr>
             <tr>
               {% if allocation.is_locked %}
