@@ -170,7 +170,10 @@ class GrantDeleteGrantsView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
                     grant_obj.delete()
                     grants_deleted_count += 1
 
-            messages.success(request, 'Deleted {} grants from project.'.format(grants_deleted_count))
+            if grants_deleted_count == 1:
+                messages.success(request, 'Deleted {} grant from project.'.format(grants_deleted_count))
+            else:
+                messages.success(request, 'Deleted {} grants from project.'.format(grants_deleted_count))
         else:
             for error in formset.errors:
                 messages.error(request, error)
