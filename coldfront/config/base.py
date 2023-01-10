@@ -58,6 +58,7 @@ INSTALLED_APPS += [
     'django_q',
     'simple_history',
     'fontawesome_free',
+    'debug_toolbar',
 ]
 
 # ColdFront Apps
@@ -78,6 +79,7 @@ INSTALLED_APPS += [
 # Django Middleware
 #------------------------------------------------------------------------------
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -154,3 +156,7 @@ if len(SITE_STATIC) > 0:
 # Add system site static files
 if os.path.isdir('/usr/share/coldfront/site/static'):
     STATICFILES_DIRS.insert(0, '/usr/share/coldfront/site/static')
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
