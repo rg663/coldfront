@@ -279,7 +279,6 @@ class AllocationUserAdmin(SimpleHistoryAdmin):
             status=AllocationUserStatusChoice.objects.get(name='Denied'))
 
     def set_removed(self, request, queryset):
-
         queryset.update(
             status=AllocationUserStatusChoice.objects.get(name='Removed'))
 
@@ -350,6 +349,7 @@ class AllocationAccountAdmin(SimpleHistoryAdmin):
 
 @admin.register(AllocationChangeStatusChoice)
 class AllocationChangeStatusChoiceAdmin(admin.ModelAdmin):
+
     list_display = ('name', )
 
 

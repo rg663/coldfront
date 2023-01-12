@@ -273,7 +273,8 @@ class Allocation(TimeStampedModel):
         return perm in perms
 
     def __str__(self):
-        return "%s (%s)" % (self.get_parent_resource.name, self.project.pi)
+        # return "%s (%s)" % (self.get_parent_resource.name, self.project.pi)
+        return '%s' % self.project.pi #reduces queries by 2%
 
 
 class AllocationAdminNote(TimeStampedModel):
@@ -469,7 +470,8 @@ class AllocationUser(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return '%s (%s)' % (self.user, self.allocation.resources.first().name)
+        # return '%s (%s)' % (self.user, self.allocation.resources.first().name)
+        return '%s' % self.user #this change reduces queries by 30%
 
     class Meta:
         verbose_name_plural = 'Allocation User Status'
