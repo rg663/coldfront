@@ -319,7 +319,8 @@ class AllocationAttributeType(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return '%s (%s)' % (self.name, self.attribute_type.name)
+        # return '%s (%s)' % (self.name, self.attribute_type.name)
+        return self.name #reduces queries by 20%
 
     class Meta:
         ordering = ['name', ]
