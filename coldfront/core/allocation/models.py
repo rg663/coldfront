@@ -273,8 +273,7 @@ class Allocation(TimeStampedModel):
         return perm in perms
 
     def __str__(self):
-        return "%s (%s)" % (self.get_parent_resource.name, self.project.pi)
-
+        return "%s (%s)" % (self.get_parent_resource.name, self.project.pi) # *This one is not really increasing queries (just 2-4 extra queries per parameter, which is insignificant)
 
 class AllocationAdminNote(TimeStampedModel):
     allocation = models.ForeignKey(Allocation, on_delete=models.CASCADE)
@@ -318,7 +317,7 @@ class AllocationAttributeType(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return '%s (%s)' % (self.name, self.attribute_type.name)
+        return '%s (%s)' % (self.name, self.attribute_type.name) # !Attribute name component is adding 8% of queries
 
     class Meta:
         ordering = ['name', ]
@@ -447,7 +446,7 @@ class AllocationAttributeUsage(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return '{}: {}'.format(self.allocation_attribute.allocation_attribute_type.name, self.value)
+        return '{}: {}'.format(self.allocation_attribute.allocation_attribute_type.name, self.value) # *Has no noticeable impact on queries
 
 
 class AllocationUserStatusChoice(TimeStampedModel):
@@ -469,7 +468,8 @@ class AllocationUser(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return '%s (%s)' % (self.user, self.allocation.resources.first().name)
+        # return '%s (%s)' % (self.user, self.allocation.resources.first().name) # !Looking up resources adds 30% of queries!
+        return "%s" % self.user
 
     class Meta:
         verbose_name_plural = 'Allocation User Status'
@@ -514,7 +514,7 @@ class AllocationChangeRequest(TimeStampedModel):
             return self.allocation.resources.filter(is_allocatable=True).first()
 
     def __str__(self):
-        return "%s (%s)" % (self.get_parent_resource.name, self.allocation.project.pi)
+        return "%s (%s)" % (self.get_parent_resource.name, self.allocation.project.pi) # *Neither is adding queries
 
 
 class AllocationAttributeChangeRequest(TimeStampedModel):
@@ -524,5 +524,4 @@ class AllocationAttributeChangeRequest(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return '%s' % (self.allocation_attribute.allocation_attribute_type.name)
-
+        return '%s' % (self.allocation_attribute.allocation_attribute_type.name) # *Does not add to queries
