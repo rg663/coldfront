@@ -1,0 +1,19 @@
+<!-- <h1>{{ question.model_field1 }}</h1>
+<ul>
+{% for choice in question.choice_set.all %}
+    <li>{{ choice.model_field1 }}</li>
+{% endfor %}
+</ul> -->
+
+<!-- <form action="{% url 'customreportapp:detail' question.id %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        <legend><h1>{{ question.model_field1 }}</h1></legend>
+        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+        {% for choice in question.choice_set.all %}
+            <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+            <label for="choice{{ forloop.counter }}">{{ choice.id}}</label><br>
+        {% endfor %}
+    </fieldset>
+    <input type="submit" value="Vote">
+</form> -->

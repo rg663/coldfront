@@ -1,0 +1,97 @@
+{% extends "common/base.html" %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load static %}
+
+<!-- <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script> -->
+
+{% block title %}
+Project Detail
+{% endblock %}
+
+{% block content %}
+
+<h1>Custom Report</h1>
+<h2>User Activity</h2>
+<table id="table1">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>User 1</td>
+      <td>21</td>
+      <td>PI</td>
+    </tr>
+    <tr>
+      <td>User 2</td>
+      <td>32</td>
+      <td>Admin</td>
+    </tr>
+    <tr>
+      <td>User 3</td>
+      <td>42</td>
+      <td>User</td>
+    </tr>
+  </tbody>
+</table>
+<h2>Allocation Usage</h2>
+<canvas id="myChart" style="width: 100%; max-width: 700px"></canvas>
+<h2>Allocation Statuses</h2>
+<h5>Allocations expiring soon</h5>
+<h5>Newly added allocations</h5>
+<!-- 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script
+  type="text/javascript"
+  src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"
+></script>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css"
+/> -->
+
+<script>
+  // var dataa = {{ projects }}
+  $(document).ready(function () {
+    $("#table1").DataTable(
+      // {data: dataa}
+    );
+  });
+</script>
+
+<script>
+        var xValues = ["Allocation 1", "Allocation 2", "Allocation 3", "Allocation 4", "Allocation 5"];
+        var yValues = [55, 49, 44, 24, 15];
+        var barColors = [
+            "#b91d47",
+            "#00aba9",
+            "#2b5797",
+            "#e8c3b9",
+            "#1e7145"
+        ];
+
+    new Chart("myChart", {
+        type: "pie",
+        data: {
+            labels: xValues,
+            datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+            }]
+        },
+        options: {
+            title: {
+            display: true,
+            text: "Allocation Usage"
+            }
+        }
+    });
+</script>
+{% endblock %}
