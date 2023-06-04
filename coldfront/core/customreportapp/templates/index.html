@@ -7,44 +7,163 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script> -->
 
 {% block title %}
-Project Detail
+Custom Report
 {% endblock %}
 
 {% block content %}
 
 <h1>Custom Report</h1>
-<h2>User Activity</h2>
-<table id="table1">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Age</th>
-      <th>Role</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>User 1</td>
-      <td>21</td>
-      <td>PI</td>
-    </tr>
-    <tr>
-      <td>User 2</td>
-      <td>32</td>
-      <td>Admin</td>
-    </tr>
-    <tr>
-      <td>User 3</td>
-      <td>42</td>
-      <td>User</td>
-    </tr>
-  </tbody>
-</table>
-<h2>Allocation Usage</h2>
-<canvas id="myChart" style="width: 100%; max-width: 700px"></canvas>
-<h2>Allocation Statuses</h2>
-<h5>Allocations expiring soon</h5>
-<h5>Newly added allocations</h5>
+<form>
+  <a class="btn btn-outline-secondary" onclick="javascript:window.print()" role="button"><i class="fas fa-print"
+      aria-hidden="true"></i> Print Report</a>
+  <hr>
+</form>
+<div class="card mb-3 border-primary">
+  <div class="card-header bg-primary text-white">
+    <i class="fas fa-server" aria-hidden="true"></i> All Allocations
+  </div>
+  <div class="card-body">
+    <table id="table1" class="table table-bordered dataTable no-footer">
+      <thead>
+        <tr>
+          <th>Allocation ID</th>
+          <th>Allocation Project Name</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for allocation in allocation_list %}
+        <tr>
+          <td>
+            <a href="{% url 'allocation-detail' allocation.pk %}">{{ allocation.id }}</a>
+          </td>
+          <td>
+            {{ allocation.project.title }}
+          </td>
+          <td>
+            {{ allocation.status }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="card mb-3 border-primary">
+  <div class="card-header bg-primary text-white">
+    <i class="fas fa-server" aria-hidden="true"></i> All Resources
+  </div>
+  <div class="card-body">
+    <table id="table2" class="table table-bordered dataTable no-footer">
+      <thead>
+        <tr>
+          <th>Resource ID</th>
+          <th>Resource Name</th>
+          <th>Type</th>
+          <th>Payment Required?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for resource in resource_list %}
+        <tr>
+          <td>
+            <a href="{% url 'resource-detail' resource.pk %}">{{ resource.id }}</a>
+          </td>
+          <td>
+            {{ resource.name }}
+          </td>
+          <td>
+            {{ resource.resource_type }}
+          </td>
+          <td>
+            {% if resource.requires_payment %}
+            Yes
+            {% else %}
+            No
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="card mb-3 border-primary">
+  <div class="card-header bg-primary text-white">
+    <i class="fas fa-users" aria-hidden="true"></i> User Activity
+  </div>
+  <div class="card-body">
+    {% if users_from_this_week|length > 1 %}
+    <div>
+    <h5>Users Who Logged In This Week</h5>
+    <hr>
+    <table id="table3" class="table table-bordered dataTable no-footer">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Last Login</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users_from_this_week %}
+        {% if user.get_full_name %}
+        <tr>
+          <td>{{ user.get_full_name }}</td>
+          <td>{{ user.last_login }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% endif %}
+
+    {% if all_other_users|length > 1 %}
+    <div>
+      <h5>Users Who Did Not Log In This Week</h5>
+      <hr>
+      <table id="table4" class="table table-bordered dataTable no-footer">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Last Login</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in all_other_users %}
+          {% if user.get_full_name %}
+          <tr>
+            <td>{{ user.get_full_name }}</td>
+            <td>{{ user.last_login }}</td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-3 border-primary">
+  <div class="card-header bg-primary text-white">
+    <i class="fas fa-server" aria-hidden="true"></i> Allocations at a Glance
+  </div>
+  <div class="card-body">
+    <h6>Newly added allocations</h6>
+    {% for alloc in new_allocations %}
+    <i class="fas fa-plus-circle"></i>
+    {{ alloc }}: Start date: {{ alloc.start_date }}
+    {% endfor %}
+    <hr>
+    <h6>Allocations expiring soon</h6>
+    {% for alloc in allocations_expiring_soon %}
+    <i class="fa fa-exclamation-circle"></i>
+    {{ alloc }}: End date: {{ alloc.end_date }}
+    {% endfor %}
+  </div>
+</div>
+
 <!-- 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 <script
@@ -57,41 +176,53 @@ Project Detail
   href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css"
 /> -->
 
+
 <script>
   // var dataa = {{ projects }}
   $(document).ready(function () {
-    $("#table1").DataTable(
-      // {data: dataa}
-    );
-  });
+    $("#table1").DataTable({ searching: false, info: false });
+    $("#table2").DataTable({ searching: false, info: false });
+    $("#table3").DataTable();
+    $("#table4").DataTable();
+  })
 </script>
 
 <script>
-        var xValues = ["Allocation 1", "Allocation 2", "Allocation 3", "Allocation 4", "Allocation 5"];
-        var yValues = [55, 49, 44, 24, 15];
-        var barColors = [
-            "#b91d47",
-            "#00aba9",
-            "#2b5797",
-            "#e8c3b9",
-            "#1e7145"
-        ];
+  $(document).ready(function () {
+    drawGrantsByAgency();
+  });
 
-    new Chart("myChart", {
-        type: "pie",
-        data: {
-            labels: xValues,
-            datasets: [{
-            backgroundColor: barColors,
-            data: yValues
-            }]
+  function drawGrantsByAgency() {
+    if (grants_agency_chart_data['columns'].length != 0) {
+      var chart = c3.generate({
+        bindto: '#myChart',
+        data: grants_agency_chart_data,
+        donut: {
+          title: "Example"
         },
-        options: {
-            title: {
-            display: true,
-            text: "Allocation Usage"
-            }
+        legend: {
+          item: {
+            onclick: function (id) { }
+          }
         }
-    });
+      });
+    }
+  }
+
+  var x = {
+    "columns": [[1, 3], [2, 3], [3, 4]],
+    "type": 'donut',
+  }
+  var grants_agency_chart_data = x
+
 </script>
 {% endblock %}
+
+<!-- <div class="card mb-3 border-primary"> -->
+<!-- <div class="card-header bg-primary text-white">
+    <i class="fas fa-server" aria-hidden="true"></i> Allocation Usage
+  </div>
+  <div class="card-body">
+    <div id="myChart"></div>
+  </div>
+</div> -->
