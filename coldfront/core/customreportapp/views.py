@@ -39,6 +39,16 @@ def index(request):
         context['new_allocations'] = [allocation for allocation in allocation_list if allocation.start_date != None and datetime.today().date() - allocation.start_date <= timedelta(days=7)]
         context['allocations_expiring_soon'] = [allocation for allocation in allocation_list if allocation.end_date != None and allocation.expires_in <= 30]
         context['resource_list'] = resource_list
+        context['resource_types_initial'] = [res.resource_type for res in resource_list]
+        context['resource_types_in_between'] = {}
+        for res_type in context['resource_types_initial']:
+            context['resource_types_in_between'][res_type] = 0
+        for res in context['resource_types_initial']:
+            context['resource_types_in_between'][res] += 1
+        context['resource_types'] = []
+        for res_type, count in context['resource_types_in_between'].items():
+            new_list = [res_type.name, count]
+            context['resource_types'].append(new_list)
         context['user_list'] = user_list
         context['users_from_this_week'] = [user for user in user_list if user.last_login != None and datetime.today().date() - user.last_login.date() <= timedelta(days=7)]
         context['all_other_users'] = [user for user in user_list if user not in context['users_from_this_week']]

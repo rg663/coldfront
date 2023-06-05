@@ -54,39 +54,10 @@ Custom Report
     <i class="fas fa-server" aria-hidden="true"></i> All Resources
   </div>
   <div class="card-body">
-    <table id="table2" class="table table-bordered dataTable no-footer">
-      <thead>
-        <tr>
-          <th>Resource ID</th>
-          <th>Resource Name</th>
-          <th>Type</th>
-          <th>Payment Required?</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for resource in resource_list %}
-        <tr>
-          <td>
-            <a href="{% url 'resource-detail' resource.pk %}">{{ resource.id }}</a>
-          </td>
-          <td>
-            {{ resource.name }}
-          </td>
-          <td>
-            {{ resource.resource_type }}
-          </td>
-          <td>
-            {% if resource.requires_payment %}
-            Yes
-            {% else %}
-            No
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+      <div id="myChart"></div>
+    </div>
   </div>
+</div>
 </div>
 <div class="card mb-3 border-primary">
   <div class="card-header bg-primary text-white">
@@ -95,26 +66,26 @@ Custom Report
   <div class="card-body">
     {% if users_from_this_week|length > 1 %}
     <div>
-    <h5>Users Who Logged In This Week</h5>
-    <hr>
-    <table id="table3" class="table table-bordered dataTable no-footer">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Last Login</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for user in users_from_this_week %}
-        {% if user.get_full_name %}
-        <tr>
-          <td>{{ user.get_full_name }}</td>
-          <td>{{ user.last_login }}</td>
-        </tr>
-        {% endif %}
-        {% endfor %}
-      </tbody>
-    </table>
+      <h5>Users Who Logged In This Week</h5>
+      <hr>
+      <table id="table3" class="table table-bordered dataTable no-footer">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Last Login</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users_from_this_week %}
+          {% if user.get_full_name %}
+          <tr>
+            <td>{{ user.get_full_name }}</td>
+            <td>{{ user.last_login }}</td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
     {% endif %}
 
@@ -153,13 +124,13 @@ Custom Report
     <h6>Newly added allocations</h6>
     {% for alloc in new_allocations %}
     <i class="fas fa-plus-circle"></i>
-    {{ alloc }}: Start date: {{ alloc.start_date }}
+    <a href="{% url 'allocation-detail' alloc.pk %}">{{alloc.project.title}} [{{ alloc }}]: </a>Start date: {{ alloc.start_date }}
     {% endfor %}
     <hr>
     <h6>Allocations expiring soon</h6>
     {% for alloc in allocations_expiring_soon %}
     <i class="fa fa-exclamation-circle"></i>
-    {{ alloc }}: End date: {{ alloc.end_date }}
+    <a href="{% url 'allocation-detail' alloc.pk %}">{{alloc.project.title}} [{{ alloc }}]: </a>End date: {{ alloc.end_date }}
     {% endfor %}
   </div>
 </div>
@@ -189,16 +160,22 @@ Custom Report
 
 <script>
   $(document).ready(function () {
-    drawGrantsByAgency();
+    drawResources();
   });
 
-  function drawGrantsByAgency() {
-    if (grants_agency_chart_data['columns'].length != 0) {
+  var res_types = {{ resource_types | safe }};
+  var data_var = {
+    "columns": res_types,
+    "type": "donut",
+  }
+
+  function drawResources() {
+    if (data_var['columns'].length != 0) {
       var chart = c3.generate({
         bindto: '#myChart',
-        data: grants_agency_chart_data,
+        data: data_var,
         donut: {
-          title: "Example"
+          title: "Resource Type Breakdown"
         },
         legend: {
           item: {
@@ -209,20 +186,11 @@ Custom Report
     }
   }
 
-  var x = {
-    "columns": [[1, 3], [2, 3], [3, 4]],
-    "type": 'donut',
-  }
-  var grants_agency_chart_data = x
+  // var x = {
+  //   "columns": [[1, 3], [2, 3], [3, 4]],
+  //   "type": 'donut',
+  // }
+  // var grants_agency_chart_data = x
 
 </script>
 {% endblock %}
-
-<!-- <div class="card mb-3 border-primary"> -->
-<!-- <div class="card-header bg-primary text-white">
-    <i class="fas fa-server" aria-hidden="true"></i> Allocation Usage
-  </div>
-  <div class="card-body">
-    <div id="myChart"></div>
-  </div>
-</div> -->
