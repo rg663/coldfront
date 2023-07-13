@@ -25,6 +25,7 @@ EMAIL_ALLOCATION_EXPIRING_NOTIFICATION_DAYS = import_from_settings(
 
 EMAIL_ADMINS_ON_ALLOCATION_EXPIRE = import_from_settings('EMAIL_ADMINS_ON_ALLOCATION_EXPIRE')
 EMAIL_ADMIN_LIST = import_from_settings('EMAIL_ADMIN_LIST')
+EMAIL_BASE_URL = import_from_settings('EMAIL_BASE_URL')
 
 def update_statuses():
 
@@ -56,12 +57,22 @@ def send_expiry_emails():
 
                 if (((allocation.status.name in ['Active', 'Payment Pending', 'Payment Requested', 'Unpaid']) and (allocation.end_date == expring_in_days))):
                     
-                    project_url = f'{CENTER_BASE_URL.strip("/")}/{"project"}/{allocation.project.pk}/'
-
-                    if (allocation.status.name in ['Payment Pending', 'Payment Requested', 'Unpaid']):
-                        allocation_renew_url = f'{CENTER_BASE_URL.strip("/")}/{"allocation"}/{allocation.pk}/'
+                    if CENTER_BASE_URL:
+                        project_url = f'{CENTER_BASE_URL.strip("/")}/{"project"}/{allocation.project.pk}/'
+                    elif EMAIL_BASE_URL:
+                        project_url = f'{EMAIL_BASE_URL.strip("/")}/{"project"}/{allocation.project.pk}/'
                     else:
-                        allocation_renew_url = f'{CENTER_BASE_URL.strip("/")}/{"allocation"}/{allocation.pk}/{"renew"}/'
+                        project_url = f'/{"project"}/{allocation.project.pk}/'
+
+                    if CENTER_BASE_URL:
+                        allocation_renew_url = f'{CENTER_BASE_URL.strip("/")}/{"allocation"}/{allocation.pk}/'
+                    elif EMAIL_BASE_URL:
+                        allocation_renew_url = f'{EMAIL_BASE_URL.strip("/")}/{"allocation"}/{allocation.pk}/'
+                    else:
+                        allocation_renew_url = f'/{"project"}/{allocation.project.pk}/'
+
+                    if not (allocation.status.name in ['Payment Pending', 'Payment Requested', 'Unpaid']):
+                        allocation_renew_url += "renew/"
 
                     resource_name = allocation.get_parent_resource.name
 
@@ -128,11 +139,22 @@ def send_expiry_emails():
 
             if (allocation.end_date == expring_in_days):
                 
-                project_url = f'{CENTER_BASE_URL.strip("/")}/{"project"}/{allocation.project.pk}/'
+                if CENTER_BASE_URL:
+                    project_url = f'{CENTER_BASE_URL.strip("/")}/{"project"}/{allocation.project.pk}/'
+                elif EMAIL_BASE_URL:
+                    project_url = f'{EMAIL_BASE_URL.strip("/")}/{"project"}/{allocation.project.pk}/'
+                else:
+                    project_url = f'/{"project"}/{allocation.project.pk}/'
 
-                allocation_renew_url = f'{CENTER_BASE_URL.strip("/")}/{"allocation"}/{allocation.pk}/{"renew"}/'
+                if CENTER_BASE_URL:
+                    allocation_url = f'{CENTER_BASE_URL.strip("/")}/{"allocation"}/{allocation.pk}/'
+                elif EMAIL_BASE_URL:
+                    allocation_url = f'{EMAIL_BASE_URL.strip("/")}/{"allocation"}/{allocation.pk}/'
+                else:
+                    allocation_url = f'/{"project"}/{allocation.project.pk}/'
 
-                allocation_url = f'{CENTER_BASE_URL.strip("/")}/{"allocation"}/{allocation.pk}/'
+                if not (allocation.status.name in ['Payment Pending', 'Payment Requested', 'Unpaid']):
+                    allocation_renew_url = allocation_url + "renew/"
 
                 resource_name = allocation.get_parent_resource.name
 
