@@ -13,9 +13,12 @@ jobs:
     - name: Set PR Template
       run: |
         template=$(cat .github/PULL_REQUEST_TEMPLATE/pull_request_template.md)
+
         pr_number=$(jq --raw-output .pull_request.number $GITHUB_EVENT_PATH)
+
         curl -X POST \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
           "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${pr_number}/comments" \
           -d '{"body": "'"${template}"'"}'
+
