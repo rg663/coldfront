@@ -8,8 +8,8 @@ from coldfront.config.env import ENV
 # Additional Apps
 INSTALLED_APPS += [
     'rest_framework',
-    'rest_framework.authtoken',
-    'oauth2_provider',
+    # 'rest_framework.authtoken',
+    # 'oauth2_provider',
 ]
 
 REST_FRAMEWORK = {

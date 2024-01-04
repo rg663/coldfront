@@ -68,6 +68,8 @@ INSTALLED_APPS += [
     'coldfront.core.grant',
     'coldfront.core.publication',
     'coldfront.core.research_output',
+    'rest_framework.authtoken',
+    'oauth2_provider',
 ]
 
 #------------------------------------------------------------------------------

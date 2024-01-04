@@ -22,7 +22,7 @@ from coldfront.plugins.slurm.utils import (SLURM_ACCOUNT_ATTRIBUTE_NAME,
 
 from django.contrib.auth.models import User
 
-from coldfront.icm.account_applications.models import AccountApplication, AccountApplicationsGIDChoice, AccountApplicationsStatusChoice
+# from coldfront.icm.account_applications.models import AccountApplication, AccountApplicationsGIDChoice, AccountApplicationsStatusChoice
 from django.shortcuts import get_object_or_404#, render
 
 
@@ -57,8 +57,6 @@ class SLURMAccountsAPI(APIView):
         )
         return Response(AllocationSerializer(allocations, many=True).data)
 
-
-
 class SLURMAccountsPublicAPI(APIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly] #this is public api
 
@@ -72,6 +70,19 @@ class SLURMAccountsPublicAPI(APIView):
         ).distinct()
         return Response(AllocationSerializer(allocations, many=True).data)
 
+class SLURMAccountsPublicAPIByAllocationStatus(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly] #this is public api
+
+    def get(self, request, username, status):
+        #resource = ResourceAttribute.objects.get(resource_attribute_type_id=15, value=cluster).resource
+        
+        allocations = Allocation.objects.filter(
+                resources__in=Resource.objects.filter(is_public=True, resource_type__name__in=['Cluster','Cluster Partition']), 
+                status__name=status, 
+                allocationuser__user__username=username
+        ).distinct()
+        print(request.user)
+        return Response(AllocationSerializer(allocations, many=True).data)
 
 @login_required
 def show_auth_code(request):
