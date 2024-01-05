@@ -13,8 +13,10 @@ from rest_framework import generics
 
 urlpatterns = [
     path('allocations/slurm/<str:cluster>/', SLURMAccountsAPI.as_view(), name='user-slurm-accounts'),
-    path('public/allocations/slurm/<str:username>/', SLURMAccountsPublicAPI.as_view(), name='user-slurm-accounts-public'),
-    path('public/allocations/slurm/<str:username>/status/<str:status>/', SLURMAccountsPublicAPIByAllocationStatus.as_view(), name='user-slurm-accounts-public-status'),
+    # path('public/allocations/slurm/<str:username>/', SLURMAccountsPublicAPI.as_view(), name='user-slurm-accounts-public'),
+    # path('public/allocations/slurm/<str:username>/status/<str:status>/', SLURMAccountsPublicAPIByAllocationStatus.as_view(), name='user-slurm-accounts-public-status'),
     path('o/showcode', show_auth_code, name='show-auth-code'),
+
+    path('projects/<int:id>/', SLURMAccountsProjectAPI.as_view(), name='project-via-id')
 ]
 

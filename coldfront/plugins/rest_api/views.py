@@ -1,8 +1,9 @@
+from coldfront.core.project.models import Project
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import serializers, generics
-
+from django.views.generic.base import TemplateView
 
 from django.conf import settings
 
@@ -46,6 +47,16 @@ class AllocationSerializer(serializers.ModelSerializer):
     def get_resource(self, obj):
         return  obj.resources.first().name
     
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'title']
+    
+    # resource = serializers.SerializerMethodField()
+
+    # def get_resource(self, obj):
+    #     return  obj.resources.first().name
+    
 class SLURMAccountsAPI(APIView):
     def get(self, request, cluster):
         #resource = ResourceAttribute.objects.get(resource_attribute_type_id=15, value=cluster).resource
@@ -83,7 +94,24 @@ class SLURMAccountsPublicAPIByAllocationStatus(APIView):
         ).distinct()
         print(request.user)
         return Response(AllocationSerializer(allocations, many=True).data)
+    
 
+class SLURMAccountsProjectAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request, id):
+        #resource = ResourceAttribute.objects.get(resource_attribute_type_id=15, value=cluster).resource
+        # project = get_object_or_404(Project,id=id)
+        # print("\n\n")
+        # print(id)
+        # print(request.user.username)
+        project = Project.objects.filter(
+                id=id, 
+                projectuser__user__username=request.user.username,
+        ).distinct()
+        # print("\n")
+        # print(project)
+        return Response(ProjectSerializer(project, many=True).data)
+    
 @login_required
 def show_auth_code(request):
     
