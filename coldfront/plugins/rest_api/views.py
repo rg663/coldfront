@@ -6,7 +6,7 @@ from rest_framework import serializers, generics
 from rest_framework.reverse import reverse
 from django.views.generic.base import TemplateView
 from rest_framework.renderers import JSONRenderer
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication, BasicAuthentication
 from django.conf import settings
 
 from coldfront.core.resource.models import ResourceAttribute, Resource
@@ -106,7 +106,7 @@ class SLURMAccountsPublicAPIByAllocationStatus(APIView):
 
 
 class ProjectAPI(generics.RetrieveUpdateDestroyAPIView):
-    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [BasicAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProjectSerializer
     lookup_field = 'id'
