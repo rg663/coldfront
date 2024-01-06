@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import serializers, generics
+from rest_framework.reverse import reverse
 from django.views.generic.base import TemplateView
 from rest_framework.renderers import JSONRenderer
 from django.conf import settings
@@ -52,11 +53,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['id', 'title']
 
-    # resource = serializers.SerializerMethodField()
-
-    # def get_resource(self, obj):
-    #     return  obj.resources.first().name
-
 class SLURMAccountsAPI(APIView):
     def get(self, request, cluster):
         #resource = ResourceAttribute.objects.get(resource_attribute_type_id=15, value=cluster).resource
@@ -97,47 +93,24 @@ class SLURMAccountsPublicAPIByAllocationStatus(APIView):
 
 class ProjectAPI(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
-
-    # def get_default_renderer(self, view):
-    #     return JSONRenderer()
-    # queryset = Project.objects.filter(
-            # id=id, 
-            # projectuser__user__username=request.user.username,
-    # ).distinct()
-    # queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
     def get_queryset(self):
         project = Project.objects.filter(
                 id=self.kwargs.get('id'), 
-                # projectuser__user__username=request.user.username,
         ).distinct()
         return project
 
     def retrieve(self, request, *args, **kwargs):
-        # pk = self.kwargs.get('id')
-        # print(kwargs['id'])
         object = Project.objects.filter(id=kwargs['id'],projectuser__user__username=request.user.username).distinct()
         if object:
             serializer = ProjectSerializer(object, many=True)
+            response = Response(serializer.data)
             print(f"if! {serializer}")
             print(serializer.data)
         else:
-            # serializer = ProjectSerializer()
-            # print(f"else! {serializer}")
-            return Response()
-        return Response(serializer.data)
-
-    # def get(self, request, id, format=None):
-        # resource = ResourceAttribute.objects.get(resource_attribute_type_id=15, value=cluster).resource
-        # project = get_object_or_404(Project,id=id)
-        # print("\n\n")
-        # print(id)
-        # print(request.user.username)
-
-        # print("\n")
-        # print(project)
-        # return Response(ProjectSerializer(project, many=True).data)
+            response = Response()
+        return response
 
 @login_required
 def show_auth_code(request):
