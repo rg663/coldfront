@@ -114,6 +114,7 @@ class ProjectAPI(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         project = Project.objects.filter(
             id=self.kwargs.get("id"),
+            projectuser__user__username=self.request.user.username
         ).distinct()
         return project
 
@@ -132,6 +133,34 @@ class ProjectAPI(generics.RetrieveUpdateDestroyAPIView):
     
     def update(self, request, *args, **kwargs):
         return Response()
+    
+class ProjectListAPI(generics.ListAPIView, generics.ListCreateAPIView):
+    authentication_classes = [BasicAuthentication]
+    # permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ProjectSerializer
+    # lookup_field = 'id'
+
+    def get_queryset(self):
+        project = Project.objects.filter(
+            projectuser__user__username=self.request.user.username
+        ).distinct()
+        return project
+
+    # def retrieve(self, request, *args, **kwargs):
+    #     object = Project.objects.filter(
+    #         id=kwargs["id"], projectuser__user__username=request.user.username
+    #     ).distinct()
+    #     if object:
+    #         serializer = ProjectSerializer(object, many=True)
+    #         response = Response(serializer.data)
+    #         print(f"if! {serializer}")
+    #         print(serializer.data)
+    #     else:
+    #         response = Response()
+    #     return response
+    
+    # def update(self, request, *args, **kwargs):
+    #     return Response()
 
 @login_required
 def show_auth_code(request):

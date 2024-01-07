@@ -17,7 +17,8 @@ urlpatterns = [
     # path('public/allocations/slurm/<str:username>/status/<str:status>/', SLURMAccountsPublicAPIByAllocationStatus.as_view(), name='user-slurm-accounts-public-status'),
     path('o/showcode', show_auth_code, name='show-auth-code'),
 
-    path('projects/<int:id>/', ProjectAPI.as_view(), name='project-via-id')
+    path('projects/<int:id>/', ProjectAPI.as_view(), name='project-via-id'),
+    path('projects/', ProjectListAPI.as_view(), name='project-list-api')
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
