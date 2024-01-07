@@ -6,7 +6,11 @@ from rest_framework import serializers, generics
 from rest_framework.reverse import reverse
 from django.views.generic.base import TemplateView
 from rest_framework.renderers import JSONRenderer
-from rest_framework.authentication import TokenAuthentication, SessionAuthentication, BasicAuthentication
+from rest_framework.authentication import (
+    TokenAuthentication,
+    SessionAuthentication,
+    BasicAuthentication,
+)
 from django.conf import settings
 
 from coldfront.core.resource.models import ResourceAttribute, Resource
@@ -57,7 +61,7 @@ class AllocationSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields =  "__all__"
+        fields = "__all__"
 
 
 class SLURMAccountsAPI(APIView):
@@ -105,17 +109,26 @@ class SLURMAccountsPublicAPIByAllocationStatus(APIView):
         return Response(AllocationSerializer(allocations, many=True).data)
 
 
-class ProjectAPI(generics.RetrieveUpdateDestroyAPIView):
+class ProjectAPI(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
     authentication_classes = [BasicAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProjectSerializer
-    lookup_field = 'id'
+    lookup_field = "id"
 
     def get_queryset(self):
-        project = Project.objects.filter(
-            id=self.kwargs.get("id"),
-            projectuser__user__username=self.request.user.username
-        ).distinct()
+        if self.request.user.userprofile.is_pi:
+            project = Project.objects.filter(
+                id=self.kwargs.get("id"), pi__username=self.request.user.username
+            )
+        else:
+            project = Project.objects.filter(
+                id=self.kwargs.get("id"),
+                projectuser__user__username=self.request.user.username,
+            )
+        # project = Project.objects.filter(
+        #     pk=self.kwargs.get("id"),
+        #     projectuser__user__username=self.request.user.username
+        # )
         return project
 
     def retrieve(self, request, *args, **kwargs):
@@ -130,37 +143,26 @@ class ProjectAPI(generics.RetrieveUpdateDestroyAPIView):
         else:
             response = Response()
         return response
-    
+
     def update(self, request, *args, **kwargs):
         return Response()
-    
-class ProjectListAPI(generics.ListAPIView, generics.ListCreateAPIView):
+
+
+class ProjectListAPI(generics.ListCreateAPIView):
     authentication_classes = [BasicAuthentication]
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProjectSerializer
-    # lookup_field = 'id'
+    lookup_field = "id"
 
     def get_queryset(self):
-        project = Project.objects.filter(
-            projectuser__user__username=self.request.user.username
-        ).distinct()
+        if self.request.user.userprofile.is_pi:
+            project = Project.objects.filter(pi__username=self.request.user.username)
+        else:
+            project = Project.objects.filter(
+                projectuser__user__username=self.request.user.username
+            )
         return project
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     object = Project.objects.filter(
-    #         id=kwargs["id"], projectuser__user__username=request.user.username
-    #     ).distinct()
-    #     if object:
-    #         serializer = ProjectSerializer(object, many=True)
-    #         response = Response(serializer.data)
-    #         print(f"if! {serializer}")
-    #         print(serializer.data)
-    #     else:
-    #         response = Response()
-    #     return response
-    
-    # def update(self, request, *args, **kwargs):
-    #     return Response()
 
 @login_required
 def show_auth_code(request):
