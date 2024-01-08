@@ -1,4 +1,5 @@
-from coldfront.core.project.models import Project
+from coldfront.core.field_of_science.models import FieldOfScience
+from coldfront.core.project.models import Project, ProjectStatusChoice
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -57,13 +58,29 @@ class AllocationSerializer(serializers.ModelSerializer):
     def get_resource(self, obj):
         return obj.resources.first().name
 
+class UserModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["username"]
+
+class FoSModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FieldOfScience
+        fields = ["description"]
+
+class ProjectStatusChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectStatusChoice
+        fields = ["name"]
 
 class ProjectSerializer(serializers.ModelSerializer):
-    pk = serializers.IntegerField(source='id', read_only=True)
+    pi = UserModelSerializer(read_only=True)
+    status = ProjectStatusChoiceSerializer(read_only=True)
+    field_of_science = FoSModelSerializer(read_only=True)
+
     class Meta:
         model = Project
         fields = "__all__"
-
 
 class SLURMAccountsAPI(APIView):
     def get(self, request, cluster):
