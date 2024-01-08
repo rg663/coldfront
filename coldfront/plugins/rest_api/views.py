@@ -110,17 +110,20 @@ class SLURMAccountsPublicAPIByAllocationStatus(APIView):
 
 
 class ProjectAPI(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
-    authentication_classes = [BasicAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProjectSerializer
     lookup_field = "id"
 
     def get_queryset(self):
         if self.request.user.userprofile.is_pi:
+            print("pi queryset")
+            print(self.request.user.username)
             project = Project.objects.filter(
                 id=self.kwargs.get("id"), pi__username=self.request.user.username
             )
         else:
+            print("non pi queryset")
             project = Project.objects.filter(
                 id=self.kwargs.get("id"),
                 projectuser__user__username=self.request.user.username,
@@ -149,7 +152,7 @@ class ProjectAPI(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
 
 
 class ProjectListAPI(generics.ListCreateAPIView):
-    authentication_classes = [BasicAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProjectSerializer
     lookup_field = "id"
