@@ -59,6 +59,7 @@ class AllocationSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
+    pk = serializers.IntegerField(source='id', read_only=True)
     class Meta:
         model = Project
         fields = "__all__"
@@ -109,8 +110,8 @@ class SLURMAccountsPublicAPIByAllocationStatus(APIView):
         return Response(AllocationSerializer(allocations, many=True).data)
 
 
-class ProjectAPI(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
-    authentication_classes = [SessionAuthentication]
+class ProjectAPI(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = [BasicAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProjectSerializer
     lookup_field = "id"
@@ -146,13 +147,19 @@ class ProjectAPI(generics.RetrieveUpdateDestroyAPIView, generics.CreateAPIView):
         else:
             response = Response()
         return response
-
+    
     def update(self, request, *args, **kwargs):
-        return Response()
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def perform_update(self, serializer):
+        serializer.save()
 
 class ProjectListAPI(generics.ListCreateAPIView):
-    authentication_classes = [SessionAuthentication]
+    authentication_classes = [BasicAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProjectSerializer
     lookup_field = "id"
