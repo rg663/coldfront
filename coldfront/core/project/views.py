@@ -165,40 +165,6 @@ class ProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
         return context
 
-# class ProjectSerializer(serializers.ModelSerializer):
-    # pi = UserModelSerializer(read_only=True)
-    # status = ProjectStatusChoiceSerializer(read_only=True)
-    # field_of_science = FoSModelSerializer(read_only=True)
-
-    # class Meta:
-    #     model = Project
-    #     fields = "__all__"
-    
-# def check_which_class_to_use(request):
-#     print(request.headers)
-#     if "text/html" in request.headers["Accept"]:
-#         print("html")
-#         return ProjectListView.as_view()(request)
-#     elif "application/json" in request.headers["Accept"]:
-#         print("json")
-#         return ProjectListAPI.as_view()(request)
-
-# class ProjectListAPI(generics.ListCreateAPIView):
-#     authentication_classes = [BasicAuthentication]  
-#     permission_classes = [permissions.IsAuthenticated]
-#     serializer_class = ProjectSerializer
-#     lookup_field = "id"
-
-#     def get_queryset(self):
-        
-#         if self.request.user.userprofile.is_pi:
-#             project = Project.objects.filter(pi__username=self.request.user.username)
-#         else:
-#             project = Project.objects.filter(
-#                 projectuser__user__username=self.request.user.username
-#             )
-#         return project
-
 class ProjectListView(LoginRequiredMixin, ListView):
     model = Project
     template_name = 'project/project_list.html'
@@ -211,15 +177,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
              return super().render_to_response(context, **response_kwargs)
         elif "application/json" in self.request.headers["Accept"]:
             return JsonResponse(list(self.get_queryset().values()), safe=False)
-            # content_type = "application/json"
-            # response_kwargs.setdefault("content_type", content_type)
-            # serializer = ProjectSerializer(object, many=True)
-            # response = Response(serializer.data)
-            # return response
-        
-    # def render_to_response(self, context: dict[str, Any], **response_kwargs: Any) -> HttpResponse:
-    #     return super().render_to_response(context, **response_kwargs)
-
+           
     def get_queryset(self):
         order_by = self.request.GET.get('order_by')
         if order_by:
