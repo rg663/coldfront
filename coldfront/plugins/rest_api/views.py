@@ -74,9 +74,9 @@ class ProjectStatusChoiceSerializer(serializers.ModelSerializer):
         fields = ["name"]
 
 class ProjectSerializer(serializers.ModelSerializer):
-    pi = UserModelSerializer(read_only=True)
-    status = ProjectStatusChoiceSerializer(read_only=True)
-    field_of_science = FoSModelSerializer(read_only=True)
+    # pi = UserModelSerializer(read_only=True)
+    # status = ProjectStatusChoiceSerializer(read_only=True)
+    # field_of_science = FoSModelSerializer(read_only=True)
 
     class Meta:
         model = Project
@@ -126,7 +126,6 @@ class SLURMAccountsPublicAPIByAllocationStatus(APIView):
         print(request.user)
         return Response(AllocationSerializer(allocations, many=True).data)
 
-
 class ProjectAPI(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [BasicAuthentication]
     permission_classes = [permissions.IsAuthenticated]
@@ -134,18 +133,18 @@ class ProjectAPI(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
 
     def get_queryset(self):
-        if self.request.user.userprofile.is_pi:
-            print("pi queryset")
-            print(self.request.user.username)
-            project = Project.objects.filter(
-                id=self.kwargs.get("id"), pi__username=self.request.user.username
-            )
-        else:
-            print("non pi queryset")
-            project = Project.objects.filter(
-                id=self.kwargs.get("id"),
-                projectuser__user__username=self.request.user.username,
-            )
+        # if self.request.user.userprofile.is_pi:
+        #     print("pi queryset")
+        #     print(self.request.user.username)
+        #     project = Project.objects.filter(
+        #         id=self.kwargs.get("id"), pi__username=self.request.user.username
+        #     )
+        # else:
+        print("non pi queryset")
+        project = Project.objects.filter(
+            id=self.kwargs.get("id"),
+            projectuser__user__username=self.request.user.username,
+        )
         # project = Project.objects.filter(
         #     pk=self.kwargs.get("id"),
         #     projectuser__user__username=self.request.user.username
@@ -165,15 +164,33 @@ class ProjectAPI(generics.RetrieveUpdateDestroyAPIView):
             response = Response()
         return response
     
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    # def update(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     serializer = self.get_serializer(instance, data=request.data, partial=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_update(serializer)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def perform_update(self, serializer):
-        serializer.save()
+    # def perform_update(self, serializer):
+    #     serializer.save()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        print(type(instance))
+        # serializer = self.get_serializer(instance, data=request.data, partial=True)
+        # serializer.is_valid(raise_exception=True)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_200_OK)
+
+    def perform_destroy(self, instance):
+        # instance.projectstatuschoice_set.all().delete()
+        instance.projectuser_set.all().delete()
+
+        instance.projectreview_set.all().delete()
+        instance.projectadmincomment_set.all().delete()
+        instance.projectuser_set.all().delete()
+
+        instance.delete()
 
 class ProjectListAPI(generics.ListCreateAPIView):
     authentication_classes = [BasicAuthentication]
@@ -182,6 +199,7 @@ class ProjectListAPI(generics.ListCreateAPIView):
     lookup_field = "id"
 
     def get_queryset(self):
+        
         if self.request.user.userprofile.is_pi:
             project = Project.objects.filter(pi__username=self.request.user.username)
         else:

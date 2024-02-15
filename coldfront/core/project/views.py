@@ -1,21 +1,21 @@
 import datetime
-import pprint
+import json
+from typing import Any
 
 from django.conf import settings
 from django.contrib import messages
+from rest_framework.response import Response
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.decorators import user_passes_test, login_required
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from coldfront.core.utils.common import import_from_settings
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
 from django.forms import formset_factory
-from django.http import (HttpResponse, HttpResponseForbidden,
-                         HttpResponseRedirect)
+from django.http import (HttpResponse, HttpResponseRedirect, JsonResponse)
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views import View
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
@@ -47,6 +47,34 @@ from coldfront.core.user.forms import UserSearchForm
 from coldfront.core.user.utils import CombinedUserSearch
 from coldfront.core.utils.common import get_domain_url, import_from_settings
 from coldfront.core.utils.mail import send_email, send_email_template
+    
+from coldfront.core.project.models import Project, ProjectStatusChoice
+from rest_framework import serializers, generics
+from rest_framework.reverse import reverse
+from django.views.generic.base import TemplateView
+from rest_framework.authentication import (
+    BasicAuthentication,
+)
+from django.conf import settings
+
+from coldfront.core.allocation.models import AllocationUser, Allocation
+
+from coldfront.core.utils.common import import_from_settings
+
+
+from django.contrib.auth.models import User
+
+# from coldfront.icm.account_applications.models import AccountApplication, AccountApplicationsGIDChoice, AccountApplicationsStatusChoice
+from django.shortcuts import get_object_or_404  # , render
+
+
+import datetime
+from django.db.models.query_utils import Q
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.http import HttpResponse, HttpResponse as HttpResponse
+from rest_framework import permissions
 
 EMAIL_ENABLED = import_from_settings('EMAIL_ENABLED', False)
 ALLOCATION_ENABLE_ALLOCATION_RENEWAL = import_from_settings(
@@ -137,17 +165,62 @@ class ProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
         return context
 
+# class ProjectSerializer(serializers.ModelSerializer):
+    # pi = UserModelSerializer(read_only=True)
+    # status = ProjectStatusChoiceSerializer(read_only=True)
+    # field_of_science = FoSModelSerializer(read_only=True)
+
+    # class Meta:
+    #     model = Project
+    #     fields = "__all__"
+    
+# def check_which_class_to_use(request):
+#     print(request.headers)
+#     if "text/html" in request.headers["Accept"]:
+#         print("html")
+#         return ProjectListView.as_view()(request)
+#     elif "application/json" in request.headers["Accept"]:
+#         print("json")
+#         return ProjectListAPI.as_view()(request)
+
+# class ProjectListAPI(generics.ListCreateAPIView):
+#     authentication_classes = [BasicAuthentication]  
+#     permission_classes = [permissions.IsAuthenticated]
+#     serializer_class = ProjectSerializer
+#     lookup_field = "id"
+
+#     def get_queryset(self):
+        
+#         if self.request.user.userprofile.is_pi:
+#             project = Project.objects.filter(pi__username=self.request.user.username)
+#         else:
+#             project = Project.objects.filter(
+#                 projectuser__user__username=self.request.user.username
+#             )
+#         return project
 
 class ProjectListView(LoginRequiredMixin, ListView):
-
     model = Project
     template_name = 'project/project_list.html'
     prefetch_related = ['pi', 'status', 'field_of_science', ]
     context_object_name = 'project_list'
     paginate_by = 25
 
-    def get_queryset(self):
+    def render_to_response(self, context, **response_kwargs):
+        if "text/html" in self.request.headers["Accept"]:
+             return super().render_to_response(context, **response_kwargs)
+        elif "application/json" in self.request.headers["Accept"]:
+            return JsonResponse(list(self.get_queryset().values()), safe=False)
+            # content_type = "application/json"
+            # response_kwargs.setdefault("content_type", content_type)
+            # serializer = ProjectSerializer(object, many=True)
+            # response = Response(serializer.data)
+            # return response
+        
+    # def render_to_response(self, context: dict[str, Any], **response_kwargs: Any) -> HttpResponse:
+    #     return super().render_to_response(context, **response_kwargs)
 
+    def get_queryset(self):
         order_by = self.request.GET.get('order_by')
         if order_by:
             direction = self.request.GET.get('direction')
@@ -201,7 +274,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
         return projects.distinct()
 
     def get_context_data(self, **kwargs):
-
+        print(self.request.headers)
         context = super().get_context_data(**kwargs)
         projects_count = self.get_queryset().count()
         context['projects_count'] = projects_count

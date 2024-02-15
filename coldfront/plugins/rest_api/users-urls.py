@@ -5,6 +5,7 @@ from django.urls import path, include
 from django.contrib.auth.models import User
 # from coldfront.icm.account_applications.models import AccountApplication, AccountApplicationsStatusChoice
 from rest_framework import routers, serializers, viewsets
+import coldfront.core.project.views as project_views
 from rest_framework.authtoken import views
 from coldfront.plugins.rest_api.views import *
 from rest_framework.urlpatterns import format_suffix_patterns
@@ -18,7 +19,6 @@ urlpatterns = [
     path('o/showcode', show_auth_code, name='show-auth-code'),
 
     path('projects/<int:id>/', ProjectAPI.as_view(), name='project-via-id'),
-    path('projects/', ProjectListAPI.as_view(), name='project-list-api')
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
