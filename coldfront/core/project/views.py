@@ -1,10 +1,7 @@
 import datetime
-import json
-from typing import Any
 
 from django.conf import settings
 from django.contrib import messages
-from rest_framework.response import Response
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
@@ -49,12 +46,8 @@ from coldfront.core.utils.common import get_domain_url, import_from_settings
 from coldfront.core.utils.mail import send_email, send_email_template
     
 from coldfront.core.project.models import Project, ProjectStatusChoice
-from rest_framework import serializers, generics
 from rest_framework.reverse import reverse
 from django.views.generic.base import TemplateView
-from rest_framework.authentication import (
-    BasicAuthentication,
-)
 from django.conf import settings
 
 from coldfront.core.allocation.models import AllocationUser, Allocation
@@ -74,7 +67,7 @@ from django.db.models.query_utils import Q
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponse as HttpResponse
-from rest_framework import permissions
+
 
 EMAIL_ENABLED = import_from_settings('EMAIL_ENABLED', False)
 ALLOCATION_ENABLE_ALLOCATION_RENEWAL = import_from_settings(
@@ -437,8 +430,33 @@ class ProjectArchiveProjectView(LoginRequiredMixin, UserPassesTestMixin, Templat
             allocation.save()
         return redirect(reverse('project-detail', kwargs={'pk': project.pk}))
 
+class JsonableResponseMixin:
+    """
+    Mixin to add JSON support to a form.
+    Must be used with an object-based FormView (e.g. CreateView)
+    """
 
-class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if self.request.accepts("text/html"):
+            return response
+        else:
+            return JsonResponse(form.errors, status=400)
+
+    def form_valid(self, form):
+        # We make sure to call the parent's form_valid() method because
+        # it might do some processing (in the case of CreateView, it will
+        # call form.save() for example).
+        response = super().form_valid(form)
+        if self.request.accepts("text/html"):
+            return response
+        else:
+            data = {
+                "pk": self.object.pk,
+            }
+            return JsonResponse(data)
+
+class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, JsonableResponseMixin, CreateView):
     model = Project
     template_name_suffix = '_create_form'
     fields = ['title', 'description', 'field_of_science', ]
@@ -450,7 +468,7 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
         if self.request.user.userprofile.is_pi:
             return True
-
+        
     def form_valid(self, form):
         project_obj = form.save(commit=False)
         form.instance.pi = self.request.user
@@ -469,7 +487,6 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def get_success_url(self):
         return reverse('project-detail', kwargs={'pk': self.object.pk})
-
 
 class ProjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Project
