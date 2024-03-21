@@ -175,7 +175,14 @@ class ResourceAttributeDeleteView(LoginRequiredMixin, UserPassesTestMixin, Templ
 
         return HttpResponseRedirect(reverse('resource-detail', kwargs={'pk': pk}))
 
-class ResourceListView(LoginRequiredMixin, ListView):
+class RenderToResponseMixin:
+    def render_to_response(self, context, **response_kwargs):
+        if "text/html" in self.request.headers["Accept"]:
+             return super().render_to_response(context, **response_kwargs)
+        elif "application/json" in self.request.headers["Accept"]:
+            return JsonResponse(list(self.get_queryset().values()), safe=False)
+
+class ResourceListView(LoginRequiredMixin, RenderToResponseMixin, ListView):
 
     model = Resource
     template_name = 'resource_list.html'

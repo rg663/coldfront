@@ -270,8 +270,14 @@ class AllocationDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
 
         return HttpResponseRedirect(reverse('allocation-detail', kwargs={'pk': pk}))
 
+class RenderToResponseMixin:
+    def render_to_response(self, context, **response_kwargs):
+        if "text/html" in self.request.headers["Accept"]:
+             return super().render_to_response(context, **response_kwargs)
+        elif "application/json" in self.request.headers["Accept"]:
+            return JsonResponse(list(self.get_queryset().values()), safe=False)
 
-class AllocationListView(LoginRequiredMixin, ListView):
+class AllocationListView(LoginRequiredMixin, RenderToResponseMixin, ListView):
 
     model = Allocation
     template_name = 'allocation/allocation_list.html'

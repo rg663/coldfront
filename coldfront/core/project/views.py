@@ -186,19 +186,20 @@ class ProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         return context
 
 
-class ProjectListView(LoginRequiredMixin, ListView):
+class RenderToResponseMixin:
+    def render_to_response(self, context, **response_kwargs):
+        if "text/html" in self.request.headers["Accept"]:
+             return super().render_to_response(context, **response_kwargs)
+        elif "application/json" in self.request.headers["Accept"]:
+            return JsonResponse(list(self.get_queryset().values()), safe=False)
+
+class ProjectListView(LoginRequiredMixin, RenderToResponseMixin, ListView):
 
     model = Project
     template_name = 'project/project_list.html'
     prefetch_related = ['pi', 'status', 'field_of_science', ]
     context_object_name = 'project_list'
     paginate_by = 25
-
-    def render_to_response(self, context, **response_kwargs):
-        if "text/html" in self.request.headers["Accept"]:
-             return super().render_to_response(context, **response_kwargs)
-        elif "application/json" in self.request.headers["Accept"]:
-            return JsonResponse(list(self.get_queryset().values()), safe=False)
 
     def get_queryset(self):
 

@@ -21,3 +21,6 @@ db.json
 .env
 .devcontainer/*
 .bin/*
+cookies.txt
+txt.txt
+curl -vvv -b cookies.md
