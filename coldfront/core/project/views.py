@@ -59,6 +59,7 @@ from coldfront.core.user.forms import UserSearchForm
 from coldfront.core.user.utils import CombinedUserSearch
 from coldfront.core.utils.common import get_domain_url, import_from_settings
 from coldfront.core.utils.mail import send_email, send_email_template
+from django.http import (HttpResponse, HttpResponseRedirect, JsonResponse)
 
 EMAIL_ENABLED = import_from_settings('EMAIL_ENABLED', False)
 ALLOCATION_ENABLE_ALLOCATION_RENEWAL = import_from_settings(
@@ -185,7 +186,14 @@ class ProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         return context
 
 
-class ProjectListView(LoginRequiredMixin, ListView):
+class RenderToResponseMixin:
+    def render_to_response(self, context, **response_kwargs):
+        if "text/html" in self.request.headers["Accept"]:
+             return super().render_to_response(context, **response_kwargs)
+        elif "application/json" in self.request.headers["Accept"]:
+            return JsonResponse(list(self.get_queryset().values()), safe=False)
+
+class ProjectListView(LoginRequiredMixin, RenderToResponseMixin, ListView):
 
     model = Project
     template_name = 'project/project_list.html'
@@ -447,8 +455,33 @@ class ProjectArchiveProjectView(LoginRequiredMixin, UserPassesTestMixin, Templat
             allocation.save()
         return redirect(reverse('project-detail', kwargs={'pk': project.pk}))
 
+class JsonableResponseMixin:
+    """
+    Mixin to add JSON support to a form.
+    Must be used with an object-based FormView (e.g. CreateView)
+    """
 
-class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if self.request.accepts("text/html"):
+            return response
+        else:
+            return JsonResponse(form.errors, status=400)
+
+    def form_valid(self, form):
+        # We make sure to call the parent's form_valid() method because
+        # it might do some processing (in the case of CreateView, it will
+        # call form.save() for example).
+        response = super().form_valid(form)
+        if self.request.accepts("text/html"):
+            return response
+        else:
+            data = {
+                "pk": self.object.pk,
+            }
+            return JsonResponse(data)
+
+class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, JsonableResponseMixin, CreateView):
     model = Project
     template_name_suffix = '_create_form'
     fields = ['title', 'description', 'field_of_science', ]
