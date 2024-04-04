@@ -514,7 +514,7 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, JsonableRespons
         return reverse('project-detail', kwargs={'pk': self.object.pk})
 
 
-class ProjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class ProjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, JsonableResponseMixin, UpdateView):
     model = Project
     template_name_suffix = '_update_form'
     fields = ['title', 'description', 'field_of_science', ]
