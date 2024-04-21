@@ -456,10 +456,9 @@ class ProjectArchiveProjectView(LoginRequiredMixin, UserPassesTestMixin, Templat
         return redirect(reverse('project-detail', kwargs={'pk': project.pk}))
 
 class JsonableResponseMixin:
-    """
-    Mixin to add JSON support to a form.
-    Must be used with an object-based FormView (e.g. CreateView)
-    """
+        
+    def get_json_status_code(self):
+        return 200
 
     def form_invalid(self, form):
         response = super().form_invalid(form)
@@ -469,9 +468,6 @@ class JsonableResponseMixin:
             return JsonResponse(form.errors, status=400)
 
     def form_valid(self, form):
-        # We make sure to call the parent's form_valid() method because
-        # it might do some processing (in the case of CreateView, it will
-        # call form.save() for example).
         response = super().form_valid(form)
         if self.request.accepts("text/html"):
             return response
@@ -479,8 +475,8 @@ class JsonableResponseMixin:
             data = {
                 "pk": self.object.pk,
             }
-            return JsonResponse(data)
-
+            return JsonResponse(data, status=self.get_json_status_code())
+    
 class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, JsonableResponseMixin, CreateView):
     model = Project
     template_name_suffix = '_create_form'
@@ -513,6 +509,8 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, JsonableRespons
     def get_success_url(self):
         return reverse('project-detail', kwargs={'pk': self.object.pk})
 
+    def get_json_status_code(self):
+        return 201
 
 class ProjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, JsonableResponseMixin, UpdateView):
     model = Project
@@ -544,6 +542,8 @@ class ProjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestM
     def get_success_url(self):
         return reverse('project-detail', kwargs={'pk': self.object.pk})
 
+    def get_json_status_code(self):
+        return 200
 
 class ProjectAddUsersSearchView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'project/project_add_users.html'
