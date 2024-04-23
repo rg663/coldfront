@@ -186,14 +186,14 @@ class ProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         return context
 
 
-class RenderToResponseMixin:
+class GetRequestMixin:
     def render_to_response(self, context, **response_kwargs):
         if "text/html" in self.request.headers["Accept"]:
              return super().render_to_response(context, **response_kwargs)
         elif "application/json" in self.request.headers["Accept"]:
             return JsonResponse(list(self.get_queryset().values()), safe=False)
 
-class ProjectListView(LoginRequiredMixin, RenderToResponseMixin, ListView):
+class ProjectListView(LoginRequiredMixin, GetRequestMixin, ListView):
 
     model = Project
     template_name = 'project/project_list.html'
@@ -455,7 +455,7 @@ class ProjectArchiveProjectView(LoginRequiredMixin, UserPassesTestMixin, Templat
             allocation.save()
         return redirect(reverse('project-detail', kwargs={'pk': project.pk}))
 
-class JsonableResponseMixin:
+class PostRequestMixin:
         
     def get_json_status_code(self):
         return 200
@@ -477,7 +477,7 @@ class JsonableResponseMixin:
             }
             return JsonResponse(data, status=self.get_json_status_code())
     
-class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, JsonableResponseMixin, CreateView):
+class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, PostRequestMixin, CreateView):
     model = Project
     template_name_suffix = '_create_form'
     fields = ['title', 'description', 'field_of_science', ]
@@ -512,7 +512,7 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, JsonableRespons
     def get_json_status_code(self):
         return 201
 
-class ProjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, JsonableResponseMixin, UpdateView):
+class ProjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestMixin, PostRequestMixin, UpdateView):
     model = Project
     template_name_suffix = '_update_form'
     fields = ['title', 'description', 'field_of_science', ]
