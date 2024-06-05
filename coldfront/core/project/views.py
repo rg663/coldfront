@@ -4,7 +4,7 @@ import pprint
 import django
 import logging 
 from django import forms
-
+from oauth2_provider.views.generic import ProtectedResourceView
 from django.conf import settings
 from django.contrib import messages
 from django import forms
@@ -193,16 +193,15 @@ class GetRequestMixin:
         elif "application/json" in self.request.headers["Accept"]:
             return JsonResponse(list(self.get_queryset().values()), safe=False)
 
-class ProjectListView(LoginRequiredMixin, GetRequestMixin, ListView):
 
+# @login_required
+class ProjectListView(LoginRequiredMixin, ListView):
     model = Project
     template_name = 'project/project_list.html'
-    prefetch_related = ['pi', 'status', 'field_of_science', ]
     context_object_name = 'project_list'
     paginate_by = 25
 
     def get_queryset(self):
-
         order_by = self.request.GET.get('order_by', 'id')
         direction = self.request.GET.get('direction', 'asc')
         if order_by != "name":
@@ -217,21 +216,18 @@ class ProjectListView(LoginRequiredMixin, GetRequestMixin, ListView):
         if project_search_form.is_valid():
             data = project_search_form.cleaned_data
             if data.get('show_all_projects') and (self.request.user.is_superuser or self.request.user.has_perm('project.can_view_all_projects')):
-                projects = Project.objects.prefetch_related('pi', 'field_of_science', 'status',).filter(
-                    status__name__in=['New', 'Active', ]).order_by(order_by)
+                projects = Project.objects.prefetch_related('pi', 'field_of_science', 'status').filter(
+                    status__name__in=['New', 'Active']).order_by(order_by)
             else:
-                projects = Project.objects.prefetch_related('pi', 'field_of_science', 'status',).filter(
-                    Q(status__name__in=['New', 'Active', ]) &
+                projects = Project.objects.prefetch_related('pi', 'field_of_science', 'status').filter(
+                    Q(status__name__in=['New', 'Active']) &
                     Q(projectuser__user=self.request.user) &
                     Q(projectuser__status__name='Active')
                 ).order_by(order_by)
 
-            # Last Name
             if data.get('last_name'):
-                projects = projects.filter(
-                    pi__last_name__icontains=data.get('last_name'))
+                projects = projects.filter(pi__last_name__icontains=data.get('last_name'))
 
-            # Username
             if data.get('username'):
                 projects = projects.filter(
                     Q(pi__username__icontains=data.get('username')) |
@@ -239,14 +235,12 @@ class ProjectListView(LoginRequiredMixin, GetRequestMixin, ListView):
                     Q(projectuser__status__name='Active')
                 )
 
-            # Field of Science
             if data.get('field_of_science'):
-                projects = projects.filter(
-                    field_of_science__description__icontains=data.get('field_of_science'))
+                projects = projects.filter(field_of_science__description__icontains=data.get('field_of_science'))
 
         else:
-            projects = Project.objects.prefetch_related('pi', 'field_of_science', 'status',).filter(
-                Q(status__name__in=['New', 'Active', ]) &
+            projects = Project.objects.prefetch_related('pi', 'field_of_science', 'status').filter(
+                Q(status__name__in=['New', 'Active']) &
                 Q(projectuser__user=self.request.user) &
                 Q(projectuser__status__name='Active')
             ).order_by(order_by)
@@ -254,7 +248,6 @@ class ProjectListView(LoginRequiredMixin, GetRequestMixin, ListView):
         return projects.distinct()
 
     def get_context_data(self, **kwargs):
-
         context = super().get_context_data(**kwargs)
         projects_count = self.get_queryset().count()
         context['projects_count'] = projects_count
@@ -279,8 +272,7 @@ class ProjectListView(LoginRequiredMixin, GetRequestMixin, ListView):
         order_by = self.request.GET.get('order_by')
         if order_by:
             direction = self.request.GET.get('direction')
-            filter_parameters_with_order_by = filter_parameters + \
-                'order_by=%s&direction=%s&' % (order_by, direction)
+            filter_parameters_with_order_by = filter_parameters + 'order_by=%s&direction=%s&' % (order_by, direction)
         else:
             filter_parameters_with_order_by = filter_parameters
 
@@ -301,6 +293,8 @@ class ProjectListView(LoginRequiredMixin, GetRequestMixin, ListView):
             project_list = paginator.page(1)
         except EmptyPage:
             project_list = paginator.page(paginator.num_pages)
+
+        context['project_list'] = project_list
 
         return context
 
@@ -1437,3 +1431,11 @@ class ProjectAttributeUpdateView(LoginRequiredMixin, UserPassesTestMixin, Templa
                 for error in project_attribute_update_form.errors.values():
                     messages.error(request, error)
                 return HttpResponseRedirect(reverse('project-attribute-update', kwargs={'pk': project_obj.pk, 'project_attribute_pk': project_attribute_obj.pk}))
+            
+from django.contrib.auth.decorators import login_required
+from django.http.response import HttpResponse
+
+@login_required
+def secret_page(request, *args, **kwargs):
+    # return None
+    return HttpResponse('Secret contents!', status=200)

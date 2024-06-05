@@ -75,10 +75,21 @@ INSTALLED_APPS += [
     'coldfront.core.research_output',
 ]
 
+INSTALLED_APPS += [
+    'oauth2_provider',
+    'corsheaders',
+]
+
+LOGIN_URL = '/admin/login/'
+
 #------------------------------------------------------------------------------
 # Django Middleware
 #------------------------------------------------------------------------------
 MIDDLEWARE = [
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -92,7 +103,9 @@ MIDDLEWARE = [
 #------------------------------------------------------------------------------
 # Django authentication backend. See auth.py
 #------------------------------------------------------------------------------
-AUTHENTICATION_BACKENDS = []
+AUTHENTICATION_BACKENDS = ['oauth2_provider.backends.OAuth2Backend',
+    # Uncomment following if you want to access the admin
+    'django.contrib.auth.backends.ModelBackend',]
 
 #------------------------------------------------------------------------------
 # Django Q
@@ -155,3 +168,5 @@ if len(SITE_STATIC) > 0:
 # Add system site static files
 if os.path.isdir('/usr/share/coldfront/site/static'):
     STATICFILES_DIRS.insert(0, '/usr/share/coldfront/site/static')
+
+CORS_ORIGIN_ALLOW_ALL = True

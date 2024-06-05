@@ -28,7 +28,7 @@ Log In
       {% if 'mozilla_django_oidc' in EXTRA_APPS %}
         <hr/>
         <p class="text-center"><strong>OR</strong></p>
-
+        <input type="hidden" name="next" value="{{ next }}" />
         <a class="btn btn-primary btn-block" role="button" href="{% url 'oidc_authentication_init' %}?next={{request.GET.next}}">
           <i class="fab fa-openid" aria-hidden="true"></i> Log in via OpenID Connect
         </a> 
